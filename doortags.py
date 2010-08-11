@@ -8,12 +8,36 @@ what this code does
 
 import logging
 
-from PIL import Image, PSDraw
+from PIL import Image, ImageOps, ImageFont, ImageDraw
+import aggdraw
 
 def build_door_tags():
     """TODO: something here"""
 
+    size = (600, 400)
+    caption_height = 100
+
     # read in bg image and add transparent strip
+    original = Image.open('baker_tower.jpg')
+    if original.mode != 'RGBA':
+        original = original.convert('RGBA')
+    img = original.copy()
+    img = ImageOps.fit(img, size)
+
+    canvas = aggdraw.Draw(img)
+    brush = aggdraw.Brush('white', opacity=125)
+    canvas.rectangle((0, img.size[1]-caption_height, size[0], size[1]), brush)
+    canvas.flush()
+
+    canvas = ImageDraw.Draw(img)
+    font = ImageFont.truetype('/Library/Fonts/HoboStd.otf', 62)
+    text = 'alixandria'
+    x, y = font.getsize(text)
+    canvas.text((size[0]/2 - x/2, size[1] - caption_height/2 - y/2.75),
+                text, font=font, fill=0)
+
+    img.show()
+
     # for each name, grab the first name and add it to a cp of the img
     # arrange the images on a pdf document
 
