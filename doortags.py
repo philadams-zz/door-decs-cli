@@ -8,6 +8,7 @@ what this code does
 
 import logging
 import os
+from csv import reader
 
 import aggdraw
 from PIL import Image, ImageOps, ImageFont, ImageDraw
@@ -15,11 +16,25 @@ from reportlab.lib.pagesizes import LETTER, landscape
 from reportlab.platypus import SimpleDocTemplate, Table
 from reportlab.platypus import Image as RLImage
 
+
+class Student(object):
+    """a cornell student"""
+
+    def __init__(self, last, first, netid, address):
+        self.last = last
+        self.first = first
+        self.netid = netid
+        self.roomnumber, self.building = address.split()
+
+    def __repr__(self):
+        return 'Student<%s, %s (%s)>' % (self.last, self.first, self.netid)
+
 def build_door_tags():
     """TODO: something here"""
 
     SIZE = (500, 340)
-    fontsize = 68
+    FONTSIZE = 68
+    SMALLFONTSIZE = 32
     CAPTION_HEIGHT = 100
     CAPTION_OPACITY = 120
     TMP_DIR = './gen'
@@ -39,20 +54,27 @@ def build_door_tags():
     # for each name, grab the first name and add it to a cp of the img
     # save each image to a gen folder
 
+    # TODO: confirm an empty TMP_DIR exists
+
     # TODO: read filenames from list of students
-    captions = ['alixandria', 'phil', 'simon', 'julian', 'rebekah']
-    for caption in captions:
+    lines = reader(open('residents.csv'))
+    residents = [Student(*line) for line in lines]
+
+    font = ImageFont.truetype('/Library/Fonts/HoboStd.otf', FONTSIZE)
+    smallfont = ImageFont.truetype('/Library/Fonts/HoboStd.otf',
+                                   SMALLFONTSIZE)
+    for resident in residents:
         # add caption
         tag = img.copy()
         canvas = ImageDraw.Draw(tag)
-        font = ImageFont.truetype('/Library/Fonts/HoboStd.otf', fontsize)
-        text = caption
-        x, y = font.getsize(text)
+        x, y = font.getsize(resident.first)
         canvas.text((SIZE[0]/2 - x/2, SIZE[1] - CAPTION_HEIGHT/2 - y/2.75),
-                    text, font=font, fill=0)
+                    resident.first, font=font, fill=0)
+        canvas.text((12, 12), resident.roomnumber, font=smallfont, fill=0)
 
-        # TODO: filename needs to be unique
-        tag.save(os.path.join(TMP_DIR, caption + '.jpg'))
+        fname = '-'.join([resident.netid, resident.first, resident.last])
+        fname += '.jpg'
+        tag.save(os.path.join(TMP_DIR, fname))
 
     # arrange the images on a pdf document using tables
 
