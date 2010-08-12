@@ -39,15 +39,20 @@ def build_door_tags():
     # for each name, grab the first name and add it to a cp of the img
     # save each image to a gen folder
 
-    # add caption
-    canvas = ImageDraw.Draw(img)
-    font = ImageFont.truetype('/Library/Fonts/HoboStd.otf', fontsize)
-    text = 'alixandria'
-    x, y = font.getsize(text)
-    canvas.text((SIZE[0]/2 - x/2, SIZE[1] - CAPTION_HEIGHT/2 - y/2.75),
-                text, font=font, fill=0)
+    # TODO: read filenames from list of students
+    captions = ['alixandria', 'phil', 'simon', 'julian', 'rebekah']
+    for caption in captions:
+        # add caption
+        tag = img.copy()
+        canvas = ImageDraw.Draw(tag)
+        font = ImageFont.truetype('/Library/Fonts/HoboStd.otf', fontsize)
+        text = caption
+        x, y = font.getsize(text)
+        canvas.text((SIZE[0]/2 - x/2, SIZE[1] - CAPTION_HEIGHT/2 - y/2.75),
+                    text, font=font, fill=0)
 
-    img.save(os.path.join(TMP_DIR, 'abc28_alix-morris.jpg'))
+        # TODO: filename needs to be unique
+        tag.save(os.path.join(TMP_DIR, caption + '.jpg'))
 
     # arrange the images on a pdf document using tables
 
