@@ -18,22 +18,22 @@ from reportlab.platypus import Image as RLImage
 def build_door_tags():
     """TODO: something here"""
 
-    size = (500, 340) # TODO: set good size for doortag
+    SIZE = (500, 340)
     fontsize = 68
-    caption_height = 100
-    caption_opacity = 120
-    tmp_dir = './gen'
+    CAPTION_HEIGHT = 100
+    CAPTION_OPACITY = 120
+    TMP_DIR = './gen'
     DPI, PPI = 72, 113 # 113 on the macbook pro...
 
     # read in bg image and resize
     original = Image.open('baker_tower.jpg')
     img = original.copy()
-    img = ImageOps.fit(img, size)
+    img = ImageOps.fit(img, SIZE)
 
     # draw opaque caption region
     canvas = aggdraw.Draw(img)
-    brush = aggdraw.Brush('white', opacity=caption_opacity)
-    canvas.rectangle((0, size[1]-caption_height, size[0], size[1]), brush)
+    brush = aggdraw.Brush('white', opacity=CAPTION_OPACITY)
+    canvas.rectangle((0, SIZE[1]-CAPTION_HEIGHT, SIZE[0], SIZE[1]), brush)
     canvas.flush()
 
     # for each name, grab the first name and add it to a cp of the img
@@ -44,22 +44,22 @@ def build_door_tags():
     font = ImageFont.truetype('/Library/Fonts/HoboStd.otf', fontsize)
     text = 'alixandria'
     x, y = font.getsize(text)
-    canvas.text((size[0]/2 - x/2, size[1] - caption_height/2 - y/2.75),
+    canvas.text((SIZE[0]/2 - x/2, SIZE[1] - CAPTION_HEIGHT/2 - y/2.75),
                 text, font=font, fill=0)
 
-    img.save(os.path.join(tmp_dir, 'abc28_alix-morris.jpg'))
+    img.save(os.path.join(TMP_DIR, 'abc28_alix-morris.jpg'))
 
     # arrange the images on a pdf document using tables
 
     doc = SimpleDocTemplate('doortags.pdf', pagesize=landscape(LETTER))
     elements = []
     table_data = []
-    images = os.listdir(tmp_dir)
+    images = os.listdir(TMP_DIR)
 
     # load images as reportlab images
     for image in images:
-        table_data.append(RLImage(os.path.join(tmp_dir, image),
-        width=size[0]*DPI/PPI, height=size[1]*DPI/PPI))
+        table_data.append(RLImage(os.path.join(TMP_DIR, image),
+        width=SIZE[0]*DPI/PPI, height=SIZE[1]*DPI/PPI))
 
     # cluster table data into groups of 2 for table cols
     if len(table_data) % 2 != 0:
