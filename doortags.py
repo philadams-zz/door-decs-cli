@@ -17,6 +17,14 @@ from reportlab.lib.pagesizes import LETTER, landscape
 from reportlab.platypus import SimpleDocTemplate, Table
 from reportlab.platypus import Image as RLImage
 
+SIZE = (500, 340)
+FONTSIZE = 68
+SMALLFONTSIZE = 32
+CAPTION_HEIGHT = 100
+CAPTION_OPACITY = 120
+TMP_DIR = './gen' # needs to be a child dir of this folder!
+DPI, PPI = 72, 113 # 113 on the macbook pro...
+
 
 class Student(object):
     """a cornell student"""
@@ -30,66 +38,54 @@ class Student(object):
     def __repr__(self):
         return 'Student<%s, %s (%s)>' % (self.last, self.first, self.netid)
 
-def build_door_tags():
-    """TODO: something here"""
-
-    SIZE = (500, 340)
-    FONTSIZE = 68
-    SMALLFONTSIZE = 32
-    CAPTION_HEIGHT = 100
-    CAPTION_OPACITY = 120
-    TMP_DIR = './gen' # needs to be a child dir of this folder!
-    DPI, PPI = 72, 113 # 113 on the macbook pro...
-
-    # read in bg image and resize
-    # TODO: pass in bg image on command line
-    original = Image.open('baker_tower.jpg')
-    img = original.copy()
-    img = ImageOps.fit(img, SIZE)
-
-    # draw opaque caption region
-    canvas = aggdraw.Draw(img)
-    brush = aggdraw.Brush('white', opacity=CAPTION_OPACITY)
-    canvas.rectangle((0, SIZE[1]-CAPTION_HEIGHT, SIZE[0], SIZE[1]), brush)
-    canvas.flush()
-
-    # for each name, grab the first name and add it to a cp of the img
-    # save each image to a gen folder
+def build_door_tags(bg_fname, student_list):
+    """
+    build door tags using bg image and list of residents
+      - bg_fname: path to background image file
+      - students: path to .csv file of residents to build tags for
+    """
 
     # confirm TMP_DIR exists and is empty
     if os.path.exists(TMP_DIR):
         shutil.rmtree(TMP_DIR)
     os.mkdir(TMP_DIR)
-    exit()
 
-    # TODO: pass in csv list on cmdline
-    lines = reader(open('residents.csv'))
-    residents = [Student(*line) for line in lines]
+    # prepare base image, adding the opaque caption region at bottom
+    original = Image.open(bg_fname)
+    base_img = original.copy()
+    base_img = ImageOps.fit(base_img, SIZE)
+    canvas = aggdraw.Draw(base_img)
+    brush = aggdraw.Brush('white', opacity=CAPTION_OPACITY)
+    canvas.rectangle((0, SIZE[1]-CAPTION_HEIGHT, SIZE[0], SIZE[1]), brush)
+    canvas.flush()
 
+    # read in student list
+    residents = [Student(*line) for line in reader(open(student_list))]
+
+    # set fonts for drawing on base image
     font = ImageFont.truetype('/Library/Fonts/HoboStd.otf', FONTSIZE)
     smallfont = ImageFont.truetype('/Library/Fonts/HoboStd.otf',
                                    SMALLFONTSIZE)
+
+    # for each resident, draw name and room no, and save in TMP_DIR
     for resident in residents:
-        # add caption
-        tag = img.copy()
+        tag = base_img.copy()
         canvas = ImageDraw.Draw(tag)
         x, y = font.getsize(resident.first)
         canvas.text((SIZE[0]/2 - x/2, SIZE[1] - CAPTION_HEIGHT/2 - y/2.75),
                     resident.first, font=font, fill=0)
         canvas.text((12, 12), resident.roomnumber, font=smallfont, fill=0)
-
         fname = '-'.join([resident.netid, resident.first, resident.last])
         fname += '.jpg'
         tag.save(os.path.join(TMP_DIR, fname))
 
     # arrange the images on a pdf document using tables
-
     doc = SimpleDocTemplate('doortags.pdf', pagesize=landscape(LETTER))
+    table_styles = [('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                    ('TOPPADDING', (0, 0), (-1, -1), 6)]
     elements = []
     table_data = []
     images = os.listdir(TMP_DIR)
-
-    # load images as reportlab images
     for image in images:
         table_data.append(RLImage(os.path.join(TMP_DIR, image),
         width=SIZE[0]*DPI/PPI, height=SIZE[1]*DPI/PPI))
@@ -99,12 +95,9 @@ def build_door_tags():
         table_data.append(table_data[-1])
     table_data = zip(*[iter(table_data)]*2)
 
-    table_styles = [('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-                    ('TOPPADDING', (0, 0), (-1, -1), 6)]
+    # build and save the pdf doc
     table = Table(table_data, style=table_styles)
     elements.append(table)
-
-    # build and save the pdf doc
     doc.build(elements)
 
 def main():
@@ -128,7 +121,13 @@ def main():
         log_level = logging.DEBUG
     logging.basicConfig(level=log_level)
 
-    build_door_tags()
+    try:
+        image, names = args
+    except ValueError:
+        print('usage: %s path/to/image path/to/residents.csv' % __file__)
+        exit()
+
+    build_door_tags(image, names)
 
 if '__main__' == __name__:
     main()
