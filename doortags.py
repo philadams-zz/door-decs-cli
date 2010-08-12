@@ -14,23 +14,26 @@ import aggdraw
 def build_door_tags():
     """TODO: something here"""
 
-    size = (600, 400)
+    size = (500, 340)
     caption_height = 100
+    caption_opacity = 120
 
-    # read in bg image and add transparent strip
+    # read in bg image and resize
     original = Image.open('baker_tower.jpg')
     if original.mode != 'RGBA':
         original = original.convert('RGBA')
     img = original.copy()
     img = ImageOps.fit(img, size)
 
+    # draw opaque caption region
     canvas = aggdraw.Draw(img)
-    brush = aggdraw.Brush('white', opacity=125)
-    canvas.rectangle((0, img.size[1]-caption_height, size[0], size[1]), brush)
+    brush = aggdraw.Brush('white', opacity=caption_opacity)
+    canvas.rectangle((0, size[1]-caption_height, size[0], size[1]), brush)
     canvas.flush()
 
+    # add caption
     canvas = ImageDraw.Draw(img)
-    font = ImageFont.truetype('/Library/Fonts/HoboStd.otf', 62)
+    font = ImageFont.truetype('/Library/Fonts/HoboStd.otf', 68)
     text = 'alixandria'
     x, y = font.getsize(text)
     canvas.text((size[0]/2 - x/2, size[1] - caption_height/2 - y/2.75),
