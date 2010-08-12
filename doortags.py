@@ -3,7 +3,14 @@
 """
 Phil Adams (http://philadams.net)
 
-what this code does
+Build pretty looking doortags for dorm residents.
+Takes a background image, a csv file of residents, and generates a
+PDF file with four tags per page, superimposing the first name and room
+number aesthetically on top of the background image.
+
+The csv format is:
+<last,first,netid,address>
+where address is understood to be <roomnumber building>
 """
 
 import logging
@@ -22,8 +29,8 @@ FONTSIZE = 68
 SMALLFONTSIZE = 32
 CAPTION_HEIGHT = 100
 CAPTION_OPACITY = 120
-TMP_DIR = './gen' # needs to be a child dir of this folder!
-DPI, PPI = 72, 113 # 113 on the macbook pro...
+TMP_DIR = './gen'  # needs to be a child dir of this folder!
+DPI, PPI = 72, 113  # 113 on the macbook pro...
 
 
 class Student(object):
@@ -37,6 +44,7 @@ class Student(object):
 
     def __repr__(self):
         return 'Student<%s, %s (%s)>' % (self.last, self.first, self.netid)
+
 
 def build_door_tags(bg_fname, student_list):
     """
@@ -56,7 +64,7 @@ def build_door_tags(bg_fname, student_list):
     base_img = ImageOps.fit(base_img, SIZE)
     canvas = aggdraw.Draw(base_img)
     brush = aggdraw.Brush('white', opacity=CAPTION_OPACITY)
-    canvas.rectangle((0, SIZE[1]-CAPTION_HEIGHT, SIZE[0], SIZE[1]), brush)
+    canvas.rectangle((0, SIZE[1] - CAPTION_HEIGHT, SIZE[0], SIZE[1]), brush)
     canvas.flush()
 
     # read in student list
@@ -99,6 +107,7 @@ def build_door_tags(bg_fname, student_list):
     table = Table(table_data, style=table_styles)
     elements.append(table)
     doc.build(elements)
+
 
 def main():
     """called with __name__ run as __main__"""
