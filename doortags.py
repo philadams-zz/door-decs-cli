@@ -8,6 +8,7 @@ what this code does
 
 import logging
 import os
+import shutil
 from csv import reader
 
 import aggdraw
@@ -37,10 +38,11 @@ def build_door_tags():
     SMALLFONTSIZE = 32
     CAPTION_HEIGHT = 100
     CAPTION_OPACITY = 120
-    TMP_DIR = './gen'
+    TMP_DIR = './gen' # needs to be a child dir of this folder!
     DPI, PPI = 72, 113 # 113 on the macbook pro...
 
     # read in bg image and resize
+    # TODO: pass in bg image on command line
     original = Image.open('baker_tower.jpg')
     img = original.copy()
     img = ImageOps.fit(img, SIZE)
@@ -54,9 +56,13 @@ def build_door_tags():
     # for each name, grab the first name and add it to a cp of the img
     # save each image to a gen folder
 
-    # TODO: confirm an empty TMP_DIR exists
+    # confirm TMP_DIR exists and is empty
+    if os.path.exists(TMP_DIR):
+        shutil.rmtree(TMP_DIR)
+    os.mkdir(TMP_DIR)
+    exit()
 
-    # TODO: read filenames from list of students
+    # TODO: pass in csv list on cmdline
     lines = reader(open('residents.csv'))
     residents = [Student(*line) for line in lines]
 
