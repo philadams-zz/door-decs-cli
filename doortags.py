@@ -9,8 +9,9 @@ PDF file with four tags per page, superimposing the first name and room
 number aesthetically on top of the background image.
 
 The csv format is:
-<last,first,netid,address>
-where address is understood to be <roomnumber building>
+<last,first,studentID,address>
+where address is understood to be <building roomnumber>
+and roomnumber is of the form 0043 or 0102A
 """
 
 import logging
@@ -30,8 +31,9 @@ FONTSIZE = 68
 SMALLFONTSIZE = 36
 CAPTION_HEIGHT = 100
 CAPTION_OPACITY = 120
-TMP_DIR = './gen'  # needs to be a child dir of this folder!
-DPI, PPI = 72, 113  # 113 on the macbook pro...
+TMP_DIR = './gen'  # should be a child dir of this folder - will get wiped!
+DPI, PPI = 72, 113  # 113 on the macbook pro - may need adjusting for you!
+PDF_FNAME = 'the-doortags.pdf'
 
 
 class Student(object):
@@ -91,7 +93,7 @@ def build_door_tags(bg_fname, student_list):
         tag.save(os.path.join(TMP_DIR, fname))
 
     # arrange the images on a pdf document using tables
-    doc = SimpleDocTemplate('doortags.pdf', pagesize=landscape(LETTER))
+    doc = SimpleDocTemplate(PDF_FNAME, pagesize=landscape(LETTER))
     table_styles = [('BOTTOMPADDING', (0, 0), (-1, -1), 6),
                     ('TOPPADDING', (0, 0), (-1, -1), 6)]
     elements = []
