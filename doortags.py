@@ -9,7 +9,7 @@ PDF file with four tags per page, superimposing the first name and room
 number aesthetically on top of the background image.
 
 The csv format is:
-<last,first,studentID,address>
+<last,first,address,studentID>
 where address is understood to be <building roomnumber>
 and roomnumber is of the form 0043 or 0102A
 """
@@ -27,13 +27,20 @@ from reportlab.platypus import SimpleDocTemplate, Table
 from reportlab.platypus import Image as RLImage
 
 SIZE = (500, 340)
-FONTSIZE = 68
+#FONT = '/Library/Fonts/HoboStd.otf'  # phil
+FONT = '/Library/Fonts/Microsoft/Calibri.ttf'  # scott
+#SMALLFONT = '/Library/Fonts/HoboStd.otf'  # phil
+SMALLFONT = '/Library/Fonts/Microsoft/Calibri.ttf'  # scott
+#FONTSIZE = 68
+FONTSIZE = 76
 SMALLFONTSIZE = 36
-CAPTION_HEIGHT = 100
+#CAPTION_HEIGHT = 100
+CAPTION_HEIGHT = 130
 CAPTION_OPACITY = 120
+CAPTION_BGHEIGHT = 100
 TMP_DIR = './gen'  # should be a child dir of this folder - will get wiped!
 DPI, PPI = 72, 113  # 113 on the macbook pro - may need adjusting for you!
-PDF_FNAME = 'the-doortags.pdf'
+PDF_FNAME = './gen/the-doortags.pdf'
 
 
 class Student(object):
@@ -43,8 +50,10 @@ class Student(object):
         self.last = last
         self.first = first
         self.netid = netid
-        self.building, self.roomnumber = address.split()
-        self.roomnumber = self.roomnumber[1:]
+        self.building, room = address.split()
+        self.roomnumber, blah = room.split('-')
+        # note: the following line is just for gothics!!!
+        #self.roomnumber = self.roomnumber[1:]
 
     def __repr__(self):
         return 'Student<%s, %s (%s)>' % (self.last, self.first, self.netid)
@@ -68,17 +77,16 @@ def build_door_tags(bg_fname, student_list):
     base_img = ImageOps.fit(base_img, SIZE)
     canvas = aggdraw.Draw(base_img)
     brush = aggdraw.Brush('white', opacity=CAPTION_OPACITY)
-    canvas.rectangle((0, SIZE[1] - CAPTION_HEIGHT, SIZE[0], SIZE[1]), brush)
+    canvas.rectangle((0, SIZE[1] - CAPTION_BGHEIGHT, SIZE[0], SIZE[1]), brush)
     canvas.flush()
 
     # read in student list
-    residents = [Student(*line) for line in reader(open(student_list))]
+    residents = [Student(*line) for line in reader(open(student_list, 'rU')) if not line[0].startswith('#')]
     residents.sort(key=attrgetter('roomnumber'))
 
     # set fonts for drawing on base image
-    font = ImageFont.truetype('/Library/Fonts/HoboStd.otf', FONTSIZE)
-    smallfont = ImageFont.truetype('/Library/Fonts/HoboStd.otf',
-                                   SMALLFONTSIZE)
+    font = ImageFont.truetype(FONT, FONTSIZE)
+    smallfont = ImageFont.truetype(SMALLFONT, SMALLFONTSIZE)
 
     # for each resident, draw name and room no, and save in TMP_DIR
     for resident in residents:
