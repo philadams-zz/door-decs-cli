@@ -1,1 +1,5 @@
 gen/*
+
+src/*
+!src/firefly.jpg
+!src/firefly.csv
