@@ -15,5 +15,6 @@ An example image and csv file are in /src. The resulting pdf file is in
 
 Sample usage:
 python doordecs.py src/firefly.jpg src/firefly.csv
+(example output in /example/firefly.pdf)
 
 Uses standard lib, and PIL, aggdraw, and reportlab packages.
