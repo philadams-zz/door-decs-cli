@@ -55,6 +55,12 @@ class Student(object):
         # note: the following line is just for gothics!!!
         #self.roomnumber = self.roomnumber[1:]
 
+    @classmethod
+    def wholeName(cls, name, address, netid):
+        namebits = name.split(',')
+        last, first = namebits[0].strip(), namebits[1].strip()
+        return cls(last, first, address, netid)
+
     def __repr__(self):
         return 'Student<%s, %s (%s)>' % (self.last, self.first, self.netid)
 
@@ -81,7 +87,8 @@ def build_door_tags(bg_fname, student_list):
     canvas.flush()
 
     # read in student list
-    residents = [Student(*line) for line in reader(open(student_list, 'rU')) if not line[0].startswith('#')]
+    #residents = [Student(*line) for line in reader(open(student_list, 'rU')) if not line[0].startswith('#')]
+    residents = [Student.wholeName(*line) for line in reader(open(student_list, 'rU')) if not line[0].startswith('#')]
     residents.sort(key=attrgetter('roomnumber'))
 
     # set fonts for drawing on base image
