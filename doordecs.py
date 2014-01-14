@@ -53,7 +53,7 @@ class Student(object):
         self.building, room = address.split()
         self.roomnumber, blah = room.split('-')
         # note: the following line is just for gothics!!!
-        #self.roomnumber = self.roomnumber[1:]
+        self.roomnumber = self.roomnumber[1:]
 
     @classmethod
     def wholeName(cls, name, address, netid):
@@ -87,8 +87,12 @@ def build_door_tags(bg_fname, student_list):
     canvas.flush()
 
     # read in student list
-    #residents = [Student(*line) for line in reader(open(student_list, 'rU')) if not line[0].startswith('#')]
-    residents = [Student.wholeName(*line) for line in reader(open(student_list, 'rU')) if not line[0].startswith('#')]
+    residents = [Student(*line)
+                 for line in reader(open(student_list, 'rU'))
+                 if not line[0].startswith('#')]
+    #residents = [Student.wholeName(*line)
+    #             for line in reader(open(student_list, 'rU'))
+    #             if not line[0].startswith('#')]
     residents.sort(key=attrgetter('roomnumber'))
 
     # set fonts for drawing on base image
@@ -100,8 +104,9 @@ def build_door_tags(bg_fname, student_list):
         tag = base_img.copy()
         canvas = ImageDraw.Draw(tag)
         x, y = font.getsize(resident.first)
-        canvas.text((SIZE[0]/2 - x/2, SIZE[1] - CAPTION_HEIGHT/2 - y/2.75),
-                    resident.first, font=font, fill=0)
+        fontsize = (SIZE[0] / 2 - x / 2,
+                    SIZE[1] - CAPTION_HEIGHT / 2 - y / 2.75)
+        canvas.text(fontsize, resident.first, font=font, fill=0)
         canvas.text((12, 12), resident.roomnumber, font=smallfont, fill=0)
         fname = '-'.join([resident.roomnumber, resident.netid])
         fname += '.jpg'
@@ -116,12 +121,13 @@ def build_door_tags(bg_fname, student_list):
     images = os.listdir(TMP_DIR)
     for image in images:
         table_data.append(RLImage(os.path.join(TMP_DIR, image),
-        width=SIZE[0]*DPI/PPI, height=SIZE[1]*DPI/PPI))
+                                  width=SIZE[0] * DPI / PPI,
+                                  height=SIZE[1] * DPI / PPI))
 
     # cluster table data into groups of 2 for table cols
     if len(table_data) % 2 != 0:
         table_data.append(table_data[-1])
-    table_data = zip(*[iter(table_data)]*2)
+    table_data = zip(*[iter(table_data)] * 2)
 
     # build and save the pdf doc
     table = Table(table_data, style=table_styles)
@@ -136,7 +142,7 @@ def main():
     # populate options
     optp = optparse.OptionParser()
     optp.add_option('-v', '--verbose', dest='verbose', action='count',
-                    help='increase verbosity (specify multiple times for more)')
+                    help='verbosity (specify multiple times for more)')
     # parse the arguments (defaults to parsing sys.argv)
     opts, args = optp.parse_args()
 
